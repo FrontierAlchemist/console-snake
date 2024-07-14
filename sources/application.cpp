@@ -47,18 +47,17 @@ namespace console_snake
 	void Application::RunApplicationLoop() {
 		_snake = Snake({ 10, 10 }, { 1, 0 });
 		_apple_position_randomizer = PositionRandomizer(10, 97, 5, 22);
+		_apple = Apple({ 15, 15 });
 
-		// постоянные координаты яблока 
-		Vector2 apple_position { 15,15 };
 		// частота смены кадров
 		int frame_rate = 100;
 		// количество собранных яблок
 		int eaten_apples = 0;
 
 		while (!_was_game_exited) {
-			UpdateMap(apple_position);
+			UpdateMap();
 			UpdateInterface();
-			UpdateSnake(apple_position);
+			UpdateSnake();
 
 			timeout(frame_rate);
 
@@ -89,14 +88,14 @@ namespace console_snake
 		endwin();
 	}
 
-	void Application::UpdateMap(const Vector2& apple) {
+	void Application::UpdateMap() {
 		clear();
 
 		UpdateField();
-		UpdateApple(apple);
+		UpdateApple();
 	}
 
-	void Application::UpdateSnake(Vector2& apple_position) {
+	void Application::UpdateSnake() {
 		const int snake_color_pair = 3;
 		// устанавливаем цвет змейки
 		attrset(A_BOLD | COLOR_PAIR(snake_color_pair));
@@ -117,7 +116,7 @@ namespace console_snake
 		// *** Если змейка столкнулась с хвостом или границами игрового поля
 		//  ### Выводим игровое меню ###
 		if (s == '*' || s == '#') {
-			ShowGameOverDialog(apple_position);
+			ShowGameOverDialog();
 		}
 		// ### Конец игрового меню ###
 
@@ -132,7 +131,8 @@ namespace console_snake
 
 			do {
 				// задаём новые координаты яблока
-				apple_position = _apple_position_randomizer.GetRandomPosition();
+				_apple.SetPosition(_apple_position_randomizer.GetRandomPosition());
+				Vector2 apple_position = _apple.GetPosition();
 				move(apple_position.y, apple_position.x);
 				auto s = static_cast<char>(winch(stdscr));
 				// повторяем цикл пока координаты яблока совпадают с хвостом змейки
@@ -150,7 +150,7 @@ namespace console_snake
 		}
 	}
 	
-	void Application::ShowGameOverDialog(Vector2& apple_position) {
+	void Application::ShowGameOverDialog() {
 		const int game_over_dialog_color_pair = 4;
 		attrset(A_BOLD | COLOR_PAIR(game_over_dialog_color_pair));
 
@@ -172,7 +172,7 @@ namespace console_snake
 				_snake.head_position = { 10, 10 };
 				_snake.direction = { 10, 10 };
 				_snake.body_parts_positions.clear();
-				apple_position = { 15,15 };
+				_apple.SetPosition({ 15,15 });
 				_eaten_apples_count = 0;
 				return;
 			}
@@ -207,11 +207,12 @@ namespace console_snake
 		}
 	}
 
-	void Application::UpdateApple(const Vector2& apple) {
+	void Application::UpdateApple() {
 		const int apple_color_pair = 2;
 		attrset(A_BOLD | COLOR_PAIR(apple_color_pair));
 
-		move(apple.y, apple.x);
+		Vector2 apple_position = _apple.GetPosition();
+		move(apple_position.y, apple_position.x);
 		printw("@");
 	}
 }

@@ -27,6 +27,9 @@
     <ClCompile Include="sources\position_randomizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sources\apple.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\application.h">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="sources\position_randomizer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\apple.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

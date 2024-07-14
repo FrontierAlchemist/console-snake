@@ -1,8 +1,8 @@
 #pragma once
 
+#include "apple.h"
 #include "snake.h"
 #include "position_randomizer.h"
-#include "vector2.h"
 
 namespace console_snake {
 	class Application {
@@ -14,6 +14,7 @@ namespace console_snake {
 		static Application* instance;
 
 		Snake _snake;
+		Apple _apple;
 		PositionRandomizer _apple_position_randomizer;
 
 		bool _was_game_exited = false;
@@ -27,16 +28,16 @@ namespace console_snake {
 
 		void RunApplicationLoop();
 
-		void UpdateMap(const Vector2& apple_position);
+		void UpdateMap();
 
-		void UpdateSnake(Vector2& apple_position);
+		void UpdateSnake();
 
-		void ShowGameOverDialog(Vector2& apple_position);
+		void ShowGameOverDialog();
 
 		void UpdateInterface();
 
 		void UpdateField();
 
-		void UpdateApple(const Vector2& apple_position);
+		void UpdateApple();
 	};
 }
