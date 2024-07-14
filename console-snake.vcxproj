@@ -132,10 +132,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sources\application.cpp" />
+    <ClCompile Include="sources\position_randomizer.cpp" />
     <ClCompile Include="sources\snake.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\application.h" />
+    <ClInclude Include="sources\position_randomizer.h" />
     <ClInclude Include="sources\snake.h" />
     <ClInclude Include="sources\vector2.h" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "snake.h"
+#include "position_randomizer.h"
 #include "vector2.h"
 
 namespace console_snake {
@@ -12,9 +13,11 @@ namespace console_snake {
 	private:
 		static Application* instance;
 
-		Snake snake;
-		bool was_game_exited = false;
-		int eaten_apples = 0;
+		Snake _snake;
+		PositionRandomizer _apple_position_randomizer;
+
+		bool _was_game_exited = false;
+		int _eaten_apples_count = 0;
 
 		Application();
 
@@ -26,7 +29,7 @@ namespace console_snake {
 
 		void UpdateMap(const Vector2& apple_position);
 
-		void UpdateSnake(Vector2& apple_position, Vector2 random_apple_position);
+		void UpdateSnake(Vector2& apple_position);
 
 		void ShowGameOverDialog(Vector2& apple_position);
 

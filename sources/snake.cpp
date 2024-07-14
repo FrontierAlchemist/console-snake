@@ -9,4 +9,8 @@ namespace console_snake {
 
 		body_parts_positions = std::vector<Vector2>();
 	}
+
+	void Snake::SetDirection(Vector2 direction) {
+		this->direction = direction;
+	}
 }

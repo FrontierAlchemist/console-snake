@@ -2,7 +2,6 @@
 #include "curses.h"
 
 #include <chrono>
-#include <random>
 #include <string>
 
 namespace console_snake
@@ -46,73 +45,42 @@ namespace console_snake
 	}
 
 	void Application::RunApplicationLoop() {
-		snake = Snake({ 10, 10 }, { 1, 0 });
+		_snake = Snake({ 10, 10 }, { 1, 0 });
+		_apple_position_randomizer = PositionRandomizer(10, 97, 5, 22);
 
 		// постоянные координаты яблока 
 		Vector2 apple_position { 15,15 };
-		// случайные координаты яблока
-		Vector2 random_apple_position;
 		// частота смены кадров
 		int frame_rate = 100;
 		// количество собранных яблок
 		int eaten_apples = 0;
 
-		// **** начало работы генератора случайных чисел ****
-		// момент системного времени
-		long long seed = std::chrono::system_clock::now().time_since_epoch().count();
-		// запуск генератора случайных чисел
-		std::default_random_engine rnd(static_cast<unsigned int>(seed));
-		// установка диапазона случайных координат яблока
-		std::uniform_int_distribution<int> apple_x(10, 97);
-		std::uniform_int_distribution<int> apple_y(5, 22);
-		// **** конец работы генератора случайных чисел ****
-
-		// **** игровой цикл ****
-		while (!was_game_exited) {
-			// присваиваем случайные значения переменным случайных координат яблока
-			random_apple_position.x = apple_x(rnd);
-			random_apple_position.y = apple_y(rnd);
-			// рисуем игровое поле
+		while (!_was_game_exited) {
 			UpdateMap(apple_position);
 			UpdateInterface();
-			// перемещаем змейку по игровому полю
-			UpdateSnake(apple_position, random_apple_position);
-			// частота сменны игрового кадра
+			UpdateSnake(apple_position);
+
 			timeout(frame_rate);
 
-			// **** управление змейкой и игрой ****
-			// проверка нажатой клавиши
 			switch (getch()) {
 			case KEY_UP:
-				if (snake.direction.y == 0) {
-					snake.direction.y = -1;
-					snake.direction.x = 0;
-					frame_rate = 170;
-				}
+				_snake.SetDirection({ 0, -1 });
+				frame_rate = 170;
 				break;
 			case KEY_DOWN:
-				if (snake.direction.y == 0) {
-					snake.direction.y = 1;
-					snake.direction.x = 0;
-					frame_rate = 170;
-				}
+				_snake.SetDirection({ 0, 1 });
+				frame_rate = 170;
 				break;
 			case KEY_LEFT:
-				if (snake.direction.x == 0) {
-					snake.direction.x = -1;
-					snake.direction.y = 0;
-					frame_rate = 100;
-				}
+				_snake.SetDirection({ -1, 0 });
+				frame_rate = 100;
 				break;
 			case KEY_RIGHT:
-				if (snake.direction.x == 0) {
-					snake.direction.x = 1;
-					snake.direction.y = 0;
-					frame_rate = 100;
-				}
+				_snake.SetDirection({ 1, 0 });
+				frame_rate = 100;
 				break;
 			case 'q':
-				was_game_exited = true;
+				_was_game_exited = true;
 				break;
 			default:
 				break;
@@ -128,22 +96,22 @@ namespace console_snake
 		UpdateApple(apple);
 	}
 
-	void Application::UpdateSnake(Vector2& apple_position, Vector2 random_apple_position) {
+	void Application::UpdateSnake(Vector2& apple_position) {
 		const int snake_color_pair = 3;
 		// устанавливаем цвет змейки
 		attrset(A_BOLD | COLOR_PAIR(snake_color_pair));
 
 		// Если  змейка с хвостом, рисуем хвост
-		if (!snake.body_parts_positions.empty()) {
-			for (auto const& mov : snake.body_parts_positions) {
+		if (!_snake.body_parts_positions.empty()) {
+			for (auto const& mov : _snake.body_parts_positions) {
 				move(mov.y, mov.x);
 				printw("#");
 			}
 		}
 		// изменяем координаты головы змейки
-		snake.head_position += snake.direction;
+		_snake.head_position += _snake.direction;
 		// перемещаем курсов в координаты головы змейки
-		move(snake.head_position.y, snake.head_position.x);
+		move(_snake.head_position.y, _snake.head_position.x);
 		// проверяем символ в установленных координатах курсора
 		auto s = static_cast<char>(winch(stdscr));
 		// *** Если змейка столкнулась с хвостом или границами игрового поля
@@ -156,15 +124,15 @@ namespace console_snake
 		//  Если змейка съедает яблоко
 		if (s == '@') {
 			// увеличиваем количество съеденных яблок
-			eaten_apples++;
+			_eaten_apples_count++;
 			// добавляем хвост змейки
-			snake.body_parts_positions.push_back(snake.head_position);
+			_snake.body_parts_positions.push_back(_snake.head_position);
 			// рисуем голову змейки
 			printw("$");
 
 			do {
 				// задаём новые координаты яблока
-				apple_position = random_apple_position;
+				apple_position = _apple_position_randomizer.GetRandomPosition();
 				move(apple_position.y, apple_position.x);
 				auto s = static_cast<char>(winch(stdscr));
 				// повторяем цикл пока координаты яблока совпадают с хвостом змейки
@@ -175,9 +143,9 @@ namespace console_snake
 			// рисуем голову змейки
 			printw("$");
 			// обновляем координаты хвоста змеи
-			if (!snake.body_parts_positions.empty()) {
-				snake.body_parts_positions.erase(snake.body_parts_positions.begin());
-				snake.body_parts_positions.push_back(snake.head_position);
+			if (!_snake.body_parts_positions.empty()) {
+				_snake.body_parts_positions.erase(_snake.body_parts_positions.begin());
+				_snake.body_parts_positions.push_back(_snake.head_position);
 			}
 		}
 	}
@@ -197,15 +165,15 @@ namespace console_snake
 		printw(game_over_instruction.c_str());
 		while (true) {
 			if (getch() == 'q') {
-				was_game_exited = true;
+				_was_game_exited = true;
 				return;
 			}
 			if (getch() == 'n') {
-				snake.head_position = { 10, 10 };
-				snake.direction = { 10, 10 };
-				snake.body_parts_positions.clear();
+				_snake.head_position = { 10, 10 };
+				_snake.direction = { 10, 10 };
+				_snake.body_parts_positions.clear();
 				apple_position = { 15,15 };
-				eaten_apples = 0;
+				_eaten_apples_count = 0;
 				return;
 			}
 		}
@@ -224,7 +192,7 @@ namespace console_snake
 		std::string collected_apples_label = "Collected apples: ";
 		move(collected_apples_label_position.y, collected_apples_label_position.x);
 		printw(collected_apples_label.c_str());
-		std::string eaten_apples_text_value = std::to_string(eaten_apples);
+		std::string eaten_apples_text_value = std::to_string(_eaten_apples_count);
 		printw(eaten_apples_text_value.c_str());
 	}
 

@@ -15,5 +15,7 @@ namespace console_snake {
 		Snake();
 
 		Snake(Vector2 head_position, Vector2 direction);
+
+		void SetDirection(Vector2 direction);
 	};
 }
