@@ -132,9 +132,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sources\application.cpp" />
+    <ClCompile Include="sources\snake.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\application.h" />
+    <ClInclude Include="sources\snake.h" />
     <ClInclude Include="sources\vector2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
