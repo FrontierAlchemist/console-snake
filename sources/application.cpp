@@ -49,10 +49,7 @@ namespace console_snake
 		_apple_position_randomizer = PositionRandomizer(10, 97, 5, 22);
 		_apple = Apple({ 15, 15 });
 
-		// частота смены кадров
-		int frame_rate = 100;
-		// количество собранных яблок
-		int eaten_apples = 0;
+		int frame_rate = 180;
 
 		while (!_was_game_exited) {
 			UpdateMap();
@@ -64,19 +61,15 @@ namespace console_snake
 			switch (getch()) {
 			case KEY_UP:
 				_snake.SetDirection({ 0, -1 });
-				frame_rate = 170;
 				break;
 			case KEY_DOWN:
 				_snake.SetDirection({ 0, 1 });
-				frame_rate = 170;
 				break;
 			case KEY_LEFT:
 				_snake.SetDirection({ -1, 0 });
-				frame_rate = 100;
 				break;
 			case KEY_RIGHT:
 				_snake.SetDirection({ 1, 0 });
-				frame_rate = 100;
 				break;
 			case 'q':
 				_was_game_exited = true;
@@ -92,18 +85,17 @@ namespace console_snake
 		clear();
 
 		UpdateField();
-		UpdateApple();
+		DrawApple();
 	}
 
 	void Application::UpdateSnake() {
 		const int snake_color_pair = 3;
-		// устанавливаем цвет змейки
 		attrset(A_BOLD | COLOR_PAIR(snake_color_pair));
 
 		// Если  змейка с хвостом, рисуем хвост
 		if (!_snake.body_parts_positions.empty()) {
-			for (auto const& mov : _snake.body_parts_positions) {
-				move(mov.y, mov.x);
+			for (Vector2 const& snake_part_position : _snake.body_parts_positions) {
+				move(snake_part_position.y, snake_part_position.x);
 				printw("#");
 			}
 		}
@@ -112,16 +104,12 @@ namespace console_snake
 		// перемещаем курсов в координаты головы змейки
 		move(_snake.head_position.y, _snake.head_position.x);
 		// проверяем символ в установленных координатах курсора
-		auto s = static_cast<char>(winch(stdscr));
+		auto checked_char = static_cast<char>(winch(stdscr));
 		// *** Если змейка столкнулась с хвостом или границами игрового поля
-		//  ### Выводим игровое меню ###
-		if (s == '*' || s == '#') {
+		if (checked_char == '*' || checked_char == '#') {
 			ShowGameOverDialog();
 		}
-		// ### Конец игрового меню ###
-
-		//  Если змейка съедает яблоко
-		if (s == '@') {
+		else if (checked_char == '@') {
 			// увеличиваем количество съеденных яблок
 			_eaten_apples_count++;
 			// добавляем хвост змейки
@@ -129,16 +117,9 @@ namespace console_snake
 			// рисуем голову змейки
 			printw("$");
 
-			do {
-				// задаём новые координаты яблока
-				_apple.SetPosition(_apple_position_randomizer.GetRandomPosition());
-				Vector2 apple_position = _apple.GetPosition();
-				move(apple_position.y, apple_position.x);
-				auto s = static_cast<char>(winch(stdscr));
-				// повторяем цикл пока координаты яблока совпадают с хвостом змейки
-			} while (s == '#');
+			CreateNewApple();
+			DrawApple();
 		}
-		// Если змейка переместилась в свободное поле
 		else {
 			// рисуем голову змейки
 			printw("$");
@@ -149,7 +130,7 @@ namespace console_snake
 			}
 		}
 	}
-	
+
 	void Application::ShowGameOverDialog() {
 		const int game_over_dialog_color_pair = 4;
 		attrset(A_BOLD | COLOR_PAIR(game_over_dialog_color_pair));
@@ -170,9 +151,9 @@ namespace console_snake
 			}
 			if (getch() == 'n') {
 				_snake.head_position = { 10, 10 };
-				_snake.direction = { 10, 10 };
+				_snake.direction = { 1, 0 };
 				_snake.body_parts_positions.clear();
-				_apple.SetPosition({ 15,15 });
+				_apple.SetPosition({ 15, 15 });
 				_eaten_apples_count = 0;
 				return;
 			}
@@ -197,6 +178,8 @@ namespace console_snake
 	}
 
 	void Application::UpdateField() {
+		const int field_color_pair = 1;
+		attrset(A_DIM | COLOR_PAIR(field_color_pair));
 		for (int y = 4; y < 28; y++) {
 			for (int x = 5; x < 112; x++) {
 				if (y == 4 || y == 27 || x == 5 || x == 111) {
@@ -207,7 +190,18 @@ namespace console_snake
 		}
 	}
 
-	void Application::UpdateApple() {
+	void Application::CreateNewApple() {
+		Vector2 new_apple_position;
+		char checked_char;
+		do {
+			new_apple_position = _apple_position_randomizer.GetRandomPosition();
+			move(new_apple_position.y, new_apple_position.x);
+			checked_char = static_cast<char>(winch(stdscr));
+		} while (checked_char == '#' || checked_char == '*' || checked_char == '$');
+		_apple.SetPosition(new_apple_position);
+	}
+
+	void Application::DrawApple() {
 		const int apple_color_pair = 2;
 		attrset(A_BOLD | COLOR_PAIR(apple_color_pair));
 

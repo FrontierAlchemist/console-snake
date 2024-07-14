@@ -38,6 +38,8 @@ namespace console_snake {
 
 		void UpdateField();
 
-		void UpdateApple();
+		void CreateNewApple();
+
+		void DrawApple();
 	};
 }
